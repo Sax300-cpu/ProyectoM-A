@@ -157,3 +157,6 @@ D:\ProyectoMA\ProyectoM-A\ClientesService\ClientesService\obj\Debug\net10.0\refi
 D:\ProyectoMA\ProyectoM-A\ClientesService\ClientesService\obj\Debug\net10.0\ClientesService.pdb
 D:\ProyectoMA\ProyectoM-A\ClientesService\ClientesService\obj\Debug\net10.0\ClientesService.genruntimeconfig.cache
 D:\ProyectoMA\ProyectoM-A\ClientesService\ClientesService\obj\Debug\net10.0\ref\ClientesService.dll
+D:\ProyectoMA\ProyectoM-A\ClientesService\ClientesService\bin\Debug\net10.0\Swashbuckle.AspNetCore.Swagger.dll
+D:\ProyectoMA\ProyectoM-A\ClientesService\ClientesService\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+D:\ProyectoMA\ProyectoM-A\ClientesService\ClientesService\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll
