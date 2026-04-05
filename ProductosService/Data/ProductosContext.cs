@@ -14,12 +14,17 @@ namespace ProductosService.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Índice único para el nombre del producto (opcional)
-            modelBuilder.Entity<Producto>()
-                .HasIndex(p => p.Nombre)
-                .IsUnique();
+            // Configuración específica para el decimal
+            modelBuilder.Entity<Producto>(entity =>
+            {
+                entity.Property(p => p.Precio)
+                    .HasPrecision(18, 2)  // ← Esto también corrige la advertencia
+                    .IsRequired();
+                
+                entity.HasIndex(p => p.Nombre).IsUnique();
+            });
 
-            // Seed data inicial
+            // Seed data
             modelBuilder.Entity<Producto>().HasData(
                 new Producto 
                 { 
@@ -27,7 +32,7 @@ namespace ProductosService.Data
                     Nombre = "Laptop HP", 
                     Precio = 850.99m, 
                     Stock = 10,
-                    Descripcion = "Laptop HP 15.6 pulgadas, 8GB RAM, 256GB SSD"
+                    Descripcion = "Laptop HP 15.6 pulgadas"
                 },
                 new Producto 
                 { 
