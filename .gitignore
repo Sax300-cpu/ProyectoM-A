@@ -1,0 +1,39 @@
+# Archivos de compilación
+bin/
+obj/
+out/
+
+# Configuración de usuario de Visual Studio
+.vs/
+*.user
+*.suo
+
+# Archivos de logs y temporales
+*.log
+*.tmp
+*.temp
+
+# Publicaciones y paquetes
+publish/
+*.publishsettings
+*.pubxml
+*.pubxml.user
+
+# Archivos de paquetes NuGet
+*.nupkg
+*.snupkg
+packages/
+*.nuspec
+
+# Configuración de Rider/JetBrains
+.idea/
+
+# Archivos de configuración locales
+appsettings.Development.json
+
+# Archivos de backup
+*.bak
+*.swp
+
+# Archivos generados por herramientas
+Generated_Code/
