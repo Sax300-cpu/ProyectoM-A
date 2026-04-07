@@ -1,5 +1,6 @@
 using ClientesService.Data;
 using Microsoft.EntityFrameworkCore;
+using AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +10,9 @@ builder.Services.AddDbContext<ClientesContext>(options =>
 
 // Controladores
 builder.Services.AddControllers();
+
+// AutoMapper
+builder.Services.AddAutoMapper(typeof(Program));
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();

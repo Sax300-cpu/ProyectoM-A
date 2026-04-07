@@ -160,3 +160,5 @@ D:\ProyectoMA\ProyectoM-A\ClientesService\ClientesService\obj\Debug\net10.0\ref\
 D:\ProyectoMA\ProyectoM-A\ClientesService\ClientesService\bin\Debug\net10.0\Swashbuckle.AspNetCore.Swagger.dll
 D:\ProyectoMA\ProyectoM-A\ClientesService\ClientesService\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerGen.dll
 D:\ProyectoMA\ProyectoM-A\ClientesService\ClientesService\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+D:\ProyectoMA\ProyectoM-A\ClientesService\ClientesService\bin\Debug\net10.0\AutoMapper.dll
+D:\ProyectoMA\ProyectoM-A\ClientesService\ClientesService\bin\Debug\net10.0\AutoMapper.Extensions.Microsoft.DependencyInjection.dll
