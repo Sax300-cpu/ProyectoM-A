@@ -1,14 +1,28 @@
-using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace VentasService.Models
 {
     public class Venta
     {
-        public int VentaID { get; set; }          // PK
-        public int ClienteID { get; set; }        // FK hacia Clientes
-        public DateTime Fecha { get; set; }       // Fecha de la venta
-        public decimal Subtotal { get; set; }     // Valor antes de impuestos
-        public decimal IVA { get; set; }          // Impuesto aplicado
-        public decimal Total { get; set; }        // Valor final
+        [Key]
+        public int VentaID { get; set; }
+
+        [Required]
+        public int ClienteID { get; set; }
+
+        [Required]
+        public DateTime Fecha { get; set; }
+
+        [Required]
+        public decimal Subtotal { get; set; }
+
+        [Required]
+        public decimal Iva { get; set; }
+
+        [Required]
+        public decimal Total { get; set; }
+
+        // 🔹 Relación con DetalleVenta (1 Venta → muchos Detalles)
+        public ICollection<DetalleVenta> Detalles { get; set; } = new List<DetalleVenta>();
     }
 }

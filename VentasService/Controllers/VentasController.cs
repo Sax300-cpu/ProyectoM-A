@@ -11,6 +11,9 @@ namespace VentasService.Controllers
     [Route("api/[controller]")]
     public class VentasController : ControllerBase
     {
+        /// <summary>Tasa de IVA aplicada al subtotal (0.12 = 12%).</summary>
+        private const decimal TasaIva = 0.12m;
+
         private readonly VentasContext _context;
         private readonly IMapper _mapper;
 
@@ -24,7 +27,13 @@ namespace VentasService.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<VentaDto>>> GetVentas()
         {
-            var ventas = await _context.Ventas.ToListAsync();
+            var ventas = await _context.Ventas
+                .Include(v => v.Detalles)
+                .ToListAsync();
+
+            foreach (var venta in ventas)
+                RecalcularTotalesDesdeDetalles(venta);
+
             return Ok(_mapper.Map<IEnumerable<VentaDto>>(ventas));
         }
 
@@ -32,12 +41,28 @@ namespace VentasService.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<VentaDto>> GetVenta(int id)
         {
-            var venta = await _context.Ventas.FindAsync(id);
+            var venta = await _context.Ventas
+                .Include(v => v.Detalles)
+                .FirstOrDefaultAsync(v => v.VentaID == id);
 
             if (venta == null)
                 return NotFound();
 
+            RecalcularTotalesDesdeDetalles(venta);
             return _mapper.Map<VentaDto>(venta);
+        }
+
+        /// <summary>
+        /// Recalcula subtotal por línea, subtotal de venta, IVA y total a partir de los detalles cargados.
+        /// </summary>
+        private static void RecalcularTotalesDesdeDetalles(Venta venta)
+        {
+            foreach (var d in venta.Detalles)
+                d.CalcularSubtotal();
+
+            venta.Subtotal = venta.Detalles.Sum(d => d.Subtotal);
+            venta.Iva = Math.Round(venta.Subtotal * TasaIva, 2, MidpointRounding.AwayFromZero);
+            venta.Total = venta.Subtotal + venta.Iva;
         }
 
         // POST: api/ventas

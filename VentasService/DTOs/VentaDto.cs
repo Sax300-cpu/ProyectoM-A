@@ -8,5 +8,7 @@ namespace VentasService.DTOs
         public decimal Subtotal { get; set; }
         public decimal IVA { get; set; }
         public decimal Total { get; set; }
+
+        public ICollection<DetalleVentaDto> Detalles { get; set; } = new List<DetalleVentaDto>();
     }
 }
