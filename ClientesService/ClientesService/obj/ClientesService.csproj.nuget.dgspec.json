@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "D:\\ProyectoMA\\ProyectoM-A\\ClientesService\\ClientesService\\ClientesService.csproj": {}
+    "C:\\Users\\wilso\\ProyectoM-A\\ClientesService\\ClientesService\\ClientesService.csproj": {}
   },
   "projects": {
-    "D:\\ProyectoMA\\ProyectoM-A\\ClientesService\\ClientesService\\ClientesService.csproj": {
+    "C:\\Users\\wilso\\ProyectoM-A\\ClientesService\\ClientesService\\ClientesService.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\ProyectoMA\\ProyectoM-A\\ClientesService\\ClientesService\\ClientesService.csproj",
+        "projectUniqueName": "C:\\Users\\wilso\\ProyectoM-A\\ClientesService\\ClientesService\\ClientesService.csproj",
         "projectName": "ClientesService",
-        "projectPath": "D:\\ProyectoMA\\ProyectoM-A\\ClientesService\\ClientesService\\ClientesService.csproj",
-        "packagesPath": "C:\\Users\\Usuario\\.nuget\\packages\\",
-        "outputPath": "D:\\ProyectoMA\\ProyectoM-A\\ClientesService\\ClientesService\\obj\\",
+        "projectPath": "C:\\Users\\wilso\\ProyectoM-A\\ClientesService\\ClientesService\\ClientesService.csproj",
+        "packagesPath": "C:\\Users\\wilso\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\wilso\\ProyectoM-A\\ClientesService\\ClientesService\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Usuario\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\wilso\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
