@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace VentasService.DTOs
@@ -8,16 +9,14 @@ namespace VentasService.DTOs
         [Required]
         public int ClienteID { get; set; }
 
-        [Required]
-        public DateTime Fecha { get; set; }
+        public DateTime Fecha { get; set; } = DateTime.Now;
 
-        [Required]
         public decimal Subtotal { get; set; }
 
-        [Required]
         public decimal IVA { get; set; }
 
-        [Required]
         public decimal Total { get; set; }
+
+        public List<DetalleVentaCreateDto> Detalles { get; set; } = new();
     }
 }

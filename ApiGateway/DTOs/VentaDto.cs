@@ -24,6 +24,9 @@ namespace ApiGateway.DTOs
     public class CrearVentaRequestDto
     {
         public int ClienteID { get; set; }
+        public decimal Subtotal { get; set; }
+        public decimal Iva { get; set; }
+        public decimal Total { get; set; }
         public List<DetalleVentaRequestDto> Detalles { get; set; } = new();
     }
 

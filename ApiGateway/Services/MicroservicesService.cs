@@ -9,6 +9,7 @@ namespace ApiGateway.Services
         Task<List<ProductoDto>> GetProductosAsync();
         Task<VentaDto> CreateVentaAsync(CrearVentaRequestDto request);
         Task<List<VentaDto>> GetVentasAsync();
+        Task<List<VentaDto>> GetVentasPorClienteAsync(int clienteId);
     }
 
     public class MicroservicesService : IMicroservicesService
@@ -57,16 +58,7 @@ namespace ApiGateway.Services
         {
             try
             {
-                var venta = new
-                {
-                    clienteID = request.ClienteID,
-                    fecha = DateTime.Now,
-                    subtotal = request.Detalles.Sum(d => d.PrecioUnitario * d.Cantidad),
-                    iva = request.Detalles.Sum(d => (d.PrecioUnitario * d.Cantidad) * 0.19m),
-                    total = request.Detalles.Sum(d => (d.PrecioUnitario * d.Cantidad) * 1.19m)
-                };
-
-                var response = await _httpClient.PostAsJsonAsync($"{_ventasServiceUrl}/api/ventas", venta);
+                var response = await _httpClient.PostAsJsonAsync($"{_ventasServiceUrl}/api/ventas", request);
                 response.EnsureSuccessStatusCode();
                 return await response.Content.ReadFromJsonAsync<VentaDto>() ?? new VentaDto();
             }
@@ -74,6 +66,21 @@ namespace ApiGateway.Services
             {
                 Console.WriteLine($"Error creating venta: {ex.Message}");
                 throw;
+            }
+        }
+
+        public async Task<List<VentaDto>> GetVentasPorClienteAsync(int clienteId)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{_ventasServiceUrl}/api/ventas/cliente/{clienteId}");
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<List<VentaDto>>() ?? new List<VentaDto>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting ventas por cliente: {ex.Message}");
+                return new List<VentaDto>();
             }
         }
 

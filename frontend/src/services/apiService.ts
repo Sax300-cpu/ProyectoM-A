@@ -24,6 +24,12 @@ export const apiService = {
     return response.json();
   },
 
+  async getVentasByCliente(clienteID: number): Promise<Venta[]> {
+    const response = await fetch(`${API_URL}/gateway/ventas/cliente/${clienteID}`);
+    if (!response.ok) throw new Error('Failed to fetch historial de ventas');
+    return response.json();
+  },
+
   async createVenta(venta: CrearVentaRequest): Promise<Venta> {
     const response = await fetch(`${API_URL}/gateway/ventas`, {
       method: 'POST',

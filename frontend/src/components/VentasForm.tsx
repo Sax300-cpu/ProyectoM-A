@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Cliente, Producto, DetalleVentaRequest } from '../types';
+import type { Cliente, Producto, DetalleVentaRequest, Venta } from '../types';
 import { apiService } from '../services/apiService';
 import './VentasForm.css';
 
@@ -13,6 +13,11 @@ export const VentasForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [historialVentas, setHistorialVentas] = useState<Venta[]>([]);
+  const [historialLoading, setHistorialLoading] = useState(false);
+  const [historialError, setHistorialError] = useState<string | null>(null);
+  const [mostrarHistorial, setMostrarHistorial] = useState(false);
+  
 
   // Cargar clientes y productos al montar el componente
   useEffect(() => {
@@ -33,6 +38,33 @@ export const VentasForm = () => {
     };
     loadData();
   }, []);
+
+  useEffect(() => {
+    const loadHistorial = async () => {
+      if (!clienteSeleccionado) {
+        setHistorialVentas([]);
+        setHistorialError(null);
+        setMostrarHistorial(false);
+        return;
+      }
+
+      try {
+        setHistorialLoading(true);
+        setHistorialError(null);
+        const ventas = await apiService.getVentasByCliente(clienteSeleccionado as number);
+        setHistorialVentas(ventas);
+      } catch (err) {
+        setHistorialError(err instanceof Error ? err.message : 'Error cargando historial');
+        setHistorialVentas([]);
+      } finally {
+        setHistorialLoading(false);
+      }
+    };
+
+    if (mostrarHistorial && clienteSeleccionado) {
+      loadHistorial();
+    }
+  }, [mostrarHistorial, clienteSeleccionado]);
 
   const handleAgregarProducto = () => {
     if (!productoSeleccionado || !cantidadSeleccionada) {
@@ -100,6 +132,9 @@ export const VentasForm = () => {
       await apiService.createVenta({
         clienteID: clienteSeleccionado as number,
         detalles,
+        subtotal,
+        iva,
+        total,
       });
 
       setSuccess(true);
@@ -155,8 +190,61 @@ export const VentasForm = () => {
             <p><strong>Dirección:</strong> {clienteInfo.direccion}</p>
           </div>
         )}
-      </div>
 
+        {clienteSeleccionado && (
+          <div className="historial-button-section">
+            <button
+              type="button"
+              onClick={() => setMostrarHistorial(!mostrarHistorial)}
+              className="btn btn-info"
+            >
+              {mostrarHistorial ? 'Ocultar Historial' : 'Ver Historial de Compras'}
+            </button>
+          </div>
+        )}
+
+        {mostrarHistorial && clienteSeleccionado && (
+          <div className="form-section">
+            <h2>Historial de compras</h2>
+            {historialLoading && <div className="loading">Cargando historial...</div>}
+            {historialError && <div className="alert alert-error">{historialError}</div>}
+            {!historialLoading && !historialError && historialVentas.length === 0 && (
+              <p>No hay ventas registradas para este cliente.</p>
+            )}
+            {!historialLoading && historialVentas.length > 0 && (
+              <div className="historial-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>ID Venta</th>
+                      <th>Fecha</th>
+                      <th>Total</th>
+                      <th>Detalle</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {historialVentas.map(venta => (
+                      <tr key={venta.ventaID}>
+                        <td>{venta.ventaID}</td>
+                        <td>{new Date(venta.fecha || '').toLocaleString()}</td>
+                        <td>${venta.total.toFixed(2)}</td>
+                        <td>
+                          {venta.detalles.map(detalle => (
+                            <div key={`${venta.ventaID}-${detalle.productoID}`} className="detalle-item">
+                              {detalle.cantidad} x {detalle.productoID} = ${detalle.subtotal.toFixed(2)}
+                            </div>
+                          ))}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+      
       <div className="form-section">
         <h2>2. Agregar Productos</h2>
         <div className="product-form">

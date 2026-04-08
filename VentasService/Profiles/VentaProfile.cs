@@ -10,9 +10,11 @@ namespace VentasService.Profiles
         {
             // De entidad a DTO
             CreateMap<Venta, VentaDto>();
+            CreateMap<DetalleVenta, DetalleVentaDto>();
 
             // De DTO de creación a entidad
             CreateMap<VentaCreateDto, Venta>();
+            CreateMap<DetalleVentaCreateDto, DetalleVenta>();
 
             // De DTO de actualización a entidad
             CreateMap<VentaUpdateDto, Venta>();

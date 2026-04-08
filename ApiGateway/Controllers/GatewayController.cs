@@ -36,6 +36,13 @@ namespace ApiGateway.Controllers
             return Ok(ventas);
         }
 
+        [HttpGet("ventas/cliente/{clienteId}")]
+        public async Task<ActionResult<List<VentaDto>>> GetVentasPorCliente(int clienteId)
+        {
+            var ventas = await _microservicesService.GetVentasPorClienteAsync(clienteId);
+            return Ok(ventas);
+        }
+
         [HttpPost("ventas")]
         public async Task<ActionResult<VentaDto>> CreateVenta([FromBody] CrearVentaRequestDto request)
         {

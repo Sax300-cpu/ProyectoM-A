@@ -45,4 +45,7 @@ export interface DetalleVentaRequest {
 export interface CrearVentaRequest {
   clienteID: number;
   detalles: DetalleVentaRequest[];
+  subtotal: number;
+  iva: number;
+  total: number;
 }

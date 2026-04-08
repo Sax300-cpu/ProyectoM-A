@@ -37,6 +37,21 @@ namespace VentasService.Controllers
             return Ok(_mapper.Map<IEnumerable<VentaDto>>(ventas));
         }
 
+        // GET: api/ventas/cliente/5
+        [HttpGet("cliente/{clienteId}")]
+        public async Task<ActionResult<IEnumerable<VentaDto>>> GetVentasPorCliente(int clienteId)
+        {
+            var ventas = await _context.Ventas
+                .Include(v => v.Detalles)
+                .Where(v => v.ClienteID == clienteId)
+                .ToListAsync();
+
+            foreach (var venta in ventas)
+                RecalcularTotalesDesdeDetalles(venta);
+
+            return Ok(_mapper.Map<IEnumerable<VentaDto>>(ventas));
+        }
+
         // GET: api/ventas/5
         [HttpGet("{id}")]
         public async Task<ActionResult<VentaDto>> GetVenta(int id)
@@ -70,6 +85,18 @@ namespace VentasService.Controllers
         public async Task<ActionResult<VentaDto>> PostVenta(VentaCreateDto ventaCreateDto)
         {
             var venta = _mapper.Map<Venta>(ventaCreateDto);
+
+            if (venta.Fecha == default)
+            {
+                venta.Fecha = DateTime.Now;
+            }
+
+            foreach (var detalle in venta.Detalles)
+            {
+                detalle.CalcularSubtotal();
+            }
+
+            RecalcularTotalesDesdeDetalles(venta);
 
             _context.Ventas.Add(venta);
             await _context.SaveChangesAsync();
