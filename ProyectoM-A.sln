@@ -6,6 +6,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ClientesService", "Clientes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientesService", "ClientesService\ClientesService\ClientesService.csproj", "{8AF6975F-3DC8-B88C-4446-808745258C6B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProductosService", "ProductosService\ProductosService.csproj", "{5B3D2C4E-7F5A-8B9C-1D2E-9F8A7B6C5D4E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VentasService", "VentasService\VentasService.csproj", "{6C4E3D5F-8G6B-9C0D-2E3F-0G9B8C7D6E5F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiGateway", "ApiGateway\ApiGateway.csproj", "{7D5F4E6G-9H7C-0D1E-3F4G-1H0C9D8E7F6G}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
