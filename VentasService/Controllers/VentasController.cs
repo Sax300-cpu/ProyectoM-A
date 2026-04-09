@@ -52,6 +52,28 @@ namespace VentasService.Controllers
             return Ok(_mapper.Map<IEnumerable<VentaDto>>(ventas));
         }
 
+        /// <summary>
+        /// Unidades vendidas por producto (agregado sobre DetalleVenta). No requiere cambios de esquema.
+        /// </summary>
+        [HttpGet("estadisticas/productos-mas-vendidos")]
+        public async Task<ActionResult<IEnumerable<ProductoVendidoDto>>> GetProductosMasVendidos([FromQuery] int top = 10)
+        {
+            top = Math.Clamp(top, 1, 100);
+            var rows = await _context.DetallesVenta
+                .AsNoTracking()
+                .GroupBy(d => d.ProductoID)
+                .Select(g => new ProductoVendidoDto
+                {
+                    ProductoID = g.Key,
+                    UnidadesVendidas = g.Sum(x => x.Cantidad),
+                })
+                .OrderByDescending(x => x.UnidadesVendidas)
+                .Take(top)
+                .ToListAsync();
+
+            return Ok(rows);
+        }
+
         // GET: api/ventas/5
         [HttpGet("{id}")]
         public async Task<ActionResult<VentaDto>> GetVenta(int id)

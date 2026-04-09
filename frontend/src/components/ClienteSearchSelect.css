@@ -1,0 +1,124 @@
+.cliente-search {
+  position: relative;
+  width: 100%;
+}
+
+.cliente-search__field {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.cliente-search__field input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  outline: none;
+  font-size: 14px;
+}
+
+.cliente-search__field input:focus {
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 2px var(--accent-bg);
+}
+
+.cliente-search__clear {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(244, 243, 236, 0.35);
+  color: var(--text-h);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.cliente-search__clear:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cliente-search__chip {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(244, 243, 236, 0.22);
+}
+
+.cliente-search__chip-name {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.cliente-search__chip-meta {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.cliente-search__list {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  max-height: 260px;
+  overflow-y: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+
+.cliente-search__option {
+  width: 100%;
+  text-align: left;
+  padding: 10px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-h);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cliente-search__option:hover {
+  background: var(--accent-bg);
+}
+
+.cliente-search__option-name {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.cliente-search__option-sub {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.cliente-search__empty {
+  position: absolute;
+  z-index: 20;
+  left: 0;
+  right: 0;
+  top: calc(100% + 4px);
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px dashed var(--border);
+  background: var(--bg);
+  font-size: 14px;
+  opacity: 0.85;
+}

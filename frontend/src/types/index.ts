@@ -13,8 +13,11 @@ export interface Producto {
   nombre: string;
   precio: number;
   stock: number;
+  productoUUID?: string;
   descripcion: string;
   activo: boolean;
+  /** ISO desde API; puede ser null en productos antiguos */
+  fechaCreacion?: string | null;
 }
 
 export interface DetalleVenta {
@@ -48,4 +51,35 @@ export interface CrearVentaRequest {
   subtotal: number;
   iva: number;
   total: number;
+}
+
+export interface ClienteCreateRequest {
+  cedula: string;
+  nombre: string;
+  apellido: string;
+  direccion: string;
+  telefono: string;
+  email: string;
+}
+
+export interface ClienteUpdateRequest extends ClienteCreateRequest {
+  clienteID: number;
+}
+
+export interface ProductoCreateRequest {
+  nombre: string;
+  precio: number;
+  stock: number;
+  descripcion: string;
+  activo: boolean;
+}
+
+export interface ProductoUpdateRequest extends ProductoCreateRequest {
+  productoID: number;
+}
+
+/** Ranking agregado desde DetalleVenta (sin cambiar BD). */
+export interface ProductoVendido {
+  productoID: number;
+  unidadesVendidas: number;
 }

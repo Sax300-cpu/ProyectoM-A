@@ -1,9 +1,20 @@
-import { useState, useEffect } from 'react';
-import type { Cliente, Producto, DetalleVentaRequest, Venta } from '../types';
+import { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import type { Cliente, Producto, DetalleVentaRequest } from '../types';
 import { apiService } from '../services/apiService';
+import { ClienteSearchSelect } from './ClienteSearchSelect';
+import '../pages/Page.css';
 import './VentasForm.css';
 
+function formatFechaProducto(iso?: string | null): string {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleString('es', { dateStyle: 'medium', timeStyle: 'short' });
+}
+
 export const VentasForm = () => {
+    const [busquedaProducto, setBusquedaProducto] = useState('');
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [productos, setProductos] = useState<Producto[]>([]);
   const [clienteSeleccionado, setClienteSeleccionado] = useState<number | ''>('');
@@ -13,13 +24,27 @@ export const VentasForm = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [historialVentas, setHistorialVentas] = useState<Venta[]>([]);
-  const [historialLoading, setHistorialLoading] = useState(false);
-  const [historialError, setHistorialError] = useState<string | null>(null);
-  const [mostrarHistorial, setMostrarHistorial] = useState(false);
-  
 
-  // Cargar clientes y productos al montar el componente
+  const productoPreview = useMemo(() => {
+    if (productoSeleccionado === '') return null;
+    return productos.find((p) => p.productoID === productoSeleccionado) ?? null;
+  }, [productoSeleccionado, productos]);
+
+  const productosActivosOrdenados = useMemo(
+    () => {
+      let filtrados = productos.filter((p) => p.activo);
+      if (busquedaProducto.trim() !== '') {
+        filtrados = filtrados.filter((p) =>
+          p.nombre.toLowerCase().includes(busquedaProducto.trim().toLowerCase())
+        );
+      }
+      return filtrados.sort((a, b) =>
+        a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' })
+      );
+    },
+    [productos, busquedaProducto],
+  );
+
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -39,40 +64,13 @@ export const VentasForm = () => {
     loadData();
   }, []);
 
-  useEffect(() => {
-    const loadHistorial = async () => {
-      if (!clienteSeleccionado) {
-        setHistorialVentas([]);
-        setHistorialError(null);
-        setMostrarHistorial(false);
-        return;
-      }
-
-      try {
-        setHistorialLoading(true);
-        setHistorialError(null);
-        const ventas = await apiService.getVentasByCliente(clienteSeleccionado as number);
-        setHistorialVentas(ventas);
-      } catch (err) {
-        setHistorialError(err instanceof Error ? err.message : 'Error cargando historial');
-        setHistorialVentas([]);
-      } finally {
-        setHistorialLoading(false);
-      }
-    };
-
-    if (mostrarHistorial && clienteSeleccionado) {
-      loadHistorial();
-    }
-  }, [mostrarHistorial, clienteSeleccionado]);
-
   const handleAgregarProducto = () => {
     if (!productoSeleccionado || !cantidadSeleccionada) {
       setError('Selecciona producto y cantidad');
       return;
     }
 
-    const producto = productos.find(p => p.productoID === productoSeleccionado);
+    const producto = productos.find((p) => p.productoID === productoSeleccionado);
     if (!producto) return;
 
     if (producto.stock < cantidadSeleccionada) {
@@ -80,13 +78,15 @@ export const VentasForm = () => {
       return;
     }
 
-    const detalleExistente = detalles.find(d => d.productoID === productoSeleccionado);
+    const detalleExistente = detalles.find((d) => d.productoID === productoSeleccionado);
     if (detalleExistente) {
-      setDetalles(detalles.map(d =>
-        d.productoID === productoSeleccionado
-          ? { ...d, cantidad: d.cantidad + cantidadSeleccionada }
-          : d
-      ));
+      setDetalles(
+        detalles.map((d) =>
+          d.productoID === productoSeleccionado
+            ? { ...d, cantidad: d.cantidad + cantidadSeleccionada }
+            : d,
+        ),
+      );
     } else {
       setDetalles([
         ...detalles,
@@ -104,15 +104,12 @@ export const VentasForm = () => {
   };
 
   const handleRemoverProducto = (productoID: number) => {
-    setDetalles(detalles.filter(d => d.productoID !== productoID));
+    setDetalles(detalles.filter((d) => d.productoID !== productoID));
   };
 
   const calcularTotales = () => {
-    const subtotal = detalles.reduce(
-      (sum, d) => sum + d.precioUnitario * d.cantidad,
-      0
-    );
-    const iva = subtotal * 0.19;
+    const subtotal = detalles.reduce((sum, d) => sum + d.precioUnitario * d.cantidad, 0);
+    const iva = subtotal * 0.12;
     const total = subtotal + iva;
     return { subtotal, iva, total };
   };
@@ -137,6 +134,9 @@ export const VentasForm = () => {
         total,
       });
 
+      const productosActualizados = await apiService.getProductos();
+      setProductos(productosActualizados);
+
       setSuccess(true);
       setClienteSeleccionado('');
       setDetalles([]);
@@ -152,170 +152,187 @@ export const VentasForm = () => {
   };
 
   const { subtotal, iva, total } = calcularTotales();
-  const clienteInfo = clientes.find(c => c.clienteID === clienteSeleccionado);
+  const clienteInfo = clientes.find((c) => c.clienteID === clienteSeleccionado);
+
+  const puedeAgregarLinea =
+    productoPreview &&
+    productoPreview.stock > 0 &&
+    cantidadSeleccionada >= 1 &&
+    cantidadSeleccionada <= productoPreview.stock;
 
   if (loading && clientes.length === 0) {
     return <div className="loading">Cargando datos...</div>;
   }
 
   return (
-    <div className="ventas-form-container">
-      <h1>Formulario de Ventas</h1>
-
+    <div className="ventas-form">
       {error && <div className="alert alert-error">{error}</div>}
-      {success && <div className="alert alert-success">¡Venta creada exitosamente!</div>}
+      {success && (
+        <div className="alert alert-success ventas-form__flash">Venta registrada correctamente.</div>
+      )}
 
-      <div className="form-section">
-        <h2>1. Seleccionar Cliente</h2>
-        <div className="form-group">
-          <label htmlFor="cliente">Cliente:</label>
-          <select
-            id="cliente"
+      <p className="ventas-form__nav-hint">
+        ¿Historial o ranking de ventas?{' '}
+        <Link to="/historial" className="ventas-form__nav-link">
+          Abrir historial y reportes
+        </Link>
+      </p>
+
+      <div className="card">
+        <div className="card__title">1 · Cliente</div>
+        <div className="form-field form-field--wide">
+          <label htmlFor="ventas-cliente">Cliente</label>
+          <ClienteSearchSelect
+            id="ventas-cliente"
+            clientes={clientes}
             value={clienteSeleccionado}
-            onChange={(e) => setClienteSeleccionado(e.target.value ? Number(e.target.value) : '')}
-          >
-            <option value="">-- Selecciona un cliente --</option>
-            {clientes.map(cliente => (
-              <option key={cliente.clienteID} value={cliente.clienteID}>
-                {cliente.nombre} {cliente.apellido} ({cliente.cedula})
-              </option>
-            ))}
-          </select>
+            onChange={setClienteSeleccionado}
+            disabled={loading}
+          />
         </div>
 
         {clienteInfo && (
-          <div className="client-info">
-            <p><strong>Email:</strong> {clienteInfo.email}</p>
-            <p><strong>Teléfono:</strong> {clienteInfo.telefono}</p>
-            <p><strong>Dirección:</strong> {clienteInfo.direccion}</p>
-          </div>
-        )}
-
-        {clienteSeleccionado && (
-          <div className="historial-button-section">
-            <button
-              type="button"
-              onClick={() => setMostrarHistorial(!mostrarHistorial)}
-              className="btn btn-info"
-            >
-              {mostrarHistorial ? 'Ocultar Historial' : 'Ver Historial de Compras'}
-            </button>
-          </div>
-        )}
-
-        {mostrarHistorial && clienteSeleccionado && (
-          <div className="form-section">
-            <h2>Historial de compras</h2>
-            {historialLoading && <div className="loading">Cargando historial...</div>}
-            {historialError && <div className="alert alert-error">{historialError}</div>}
-            {!historialLoading && !historialError && historialVentas.length === 0 && (
-              <p>No hay ventas registradas para este cliente.</p>
-            )}
-            {!historialLoading && historialVentas.length > 0 && (
-              <div className="historial-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>ID Venta</th>
-                      <th>Fecha</th>
-                      <th>Total</th>
-                      <th>Detalle</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {historialVentas.map(venta => (
-                      <tr key={venta.ventaID}>
-                        <td>{venta.ventaID}</td>
-                        <td>{new Date(venta.fecha || '').toLocaleString()}</td>
-                        <td>${venta.total.toFixed(2)}</td>
-                        <td>
-                          {venta.detalles.map(detalle => (
-                            <div key={`${venta.ventaID}-${detalle.productoID}`} className="detalle-item">
-                              {detalle.cantidad} x {detalle.productoID} = ${detalle.subtotal.toFixed(2)}
-                            </div>
-                          ))}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          <div className="ventas-detail ventas-detail--cliente">
+            <div className="ventas-detail__label">Datos del cliente</div>
+            <div className="ventas-detail__grid">
+              <div>
+                <span className="ventas-detail__k">Correo</span>
+                <span className="ventas-detail__v">{clienteInfo.email || '—'}</span>
               </div>
-            )}
+              <div>
+                <span className="ventas-detail__k">Teléfono</span>
+                <span className="ventas-detail__v">{clienteInfo.telefono || '—'}</span>
+              </div>
+              <div className="ventas-detail__full">
+                <span className="ventas-detail__k">Dirección</span>
+                <span className="ventas-detail__v">{clienteInfo.direccion || '—'}</span>
+              </div>
+            </div>
           </div>
         )}
       </div>
-      
-      <div className="form-section">
-        <h2>2. Agregar Productos</h2>
-        <div className="product-form">
-          <div className="form-group">
-            <label htmlFor="producto">Producto:</label>
-            <select
-              id="producto"
-              value={productoSeleccionado}
-              onChange={(e) => setProductoSeleccionado(e.target.value ? Number(e.target.value) : '')}
-            >
-              <option value="">-- Selecciona un producto --</option>
-              {productos.filter(p => p.activo).map(producto => (
-                <option key={producto.productoID} value={producto.productoID}>
-                  {producto.nombre} - ${producto.precio.toFixed(2)} (Stock: {producto.stock})
-                </option>
-              ))}
-            </select>
+
+        <div className="card">
+          <div className="card__title">2 · Agregar productos a la venta</div>
+          <p className="ventas-form__hint">Elige solo el nombre en la lista; el detalle aparece debajo.</p>
+
+          <div className="ventas-product-picker">
+            <div className="form-field ventas-product-picker__search">
+              <label htmlFor="busqueda-producto">Buscar producto</label>
+              <input
+                id="busqueda-producto"
+                type="text"
+                placeholder="Buscar por nombre..."
+                value={busquedaProducto}
+                onChange={(e) => setBusquedaProducto(e.target.value)}
+              />
+            </div>
+            <div className="form-field ventas-product-picker__select">
+              <label htmlFor="producto">Producto</label>
+              <select
+                id="producto"
+                value={productoSeleccionado}
+                onChange={(e) => setProductoSeleccionado(e.target.value ? Number(e.target.value) : '')}
+              >
+                <option value="">— Selecciona un producto —</option>
+                {productosActivosOrdenados.map((p) => (
+                  <option key={p.productoID} value={p.productoID}>
+                    {p.nombre}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="form-field ventas-product-picker__qty">
+              <label htmlFor="cantidad">Cantidad</label>
+              <input
+                id="cantidad"
+                type="number"
+                min={1}
+                value={cantidadSeleccionada}
+                onChange={(e) => setCantidadSeleccionada(parseInt(e.target.value, 10) || 1)}
+              />
+            </div>
+            <div className="ventas-product-picker__btn">
+              <button
+                type="button"
+                className="btn btn-success"
+                onClick={handleAgregarProducto}
+                disabled={!puedeAgregarLinea}
+              >
+                Aceptar
+              </button>
+            </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="cantidad">Cantidad:</label>
-            <input
-              id="cantidad"
-              type="number"
-              min="1"
-              value={cantidadSeleccionada}
-              onChange={(e) => setCantidadSeleccionada(parseInt(e.target.value) || 1)}
-            />
+        {productoPreview ? (
+          <div className="ventas-product-card">
+            <div className="ventas-product-card__top">
+              <h3 className="ventas-product-card__name">{productoPreview.nombre}</h3>
+              <span
+                className={
+                  productoPreview.stock === 0
+                    ? 'ventas-stock ventas-stock--out'
+                    : productoPreview.stock <= 5
+                      ? 'ventas-stock ventas-stock--low'
+                      : 'ventas-stock ventas-stock--ok'
+                }
+              >
+                Stock: {productoPreview.stock}
+              </span>
+            </div>
+            <p className="ventas-product-card__desc">
+              {productoPreview.descripcion?.trim() ? productoPreview.descripcion : 'Sin descripción.'}
+            </p>
+            <dl className="ventas-product-card__meta">
+              <div>
+                <dt>Precio</dt>
+                <dd>${productoPreview.precio.toFixed(2)}</dd>
+              </div>
+              <div>
+                <dt>Fecha de creación</dt>
+                <dd>{formatFechaProducto(productoPreview.fechaCreacion)}</dd>
+              </div>
+            </dl>
+            {productoPreview.stock === 0 ? (
+              <p className="ventas-product-card__warn">Este producto no tiene unidades disponibles.</p>
+            ) : null}
           </div>
-
-          <button
-            type="button"
-            onClick={handleAgregarProducto}
-            className="btn btn-primary"
-          >
-            Agregar
-          </button>
-        </div>
+        ) : (
+          <div className="ventas-product-placeholder">Selecciona un producto para ver su ficha.</div>
+        )}
       </div>
 
-      {detalles.length > 0 && (
-        <div className="form-section">
-          <h2>3. Detalle de Venta</h2>
-          <div className="detalles-table">
-            <table>
+      {detalles.length > 0 ? (
+        <div className="card">
+          <div className="card__title">3 · Resumen de la venta</div>
+          <div className="table-wrap">
+            <table className="table">
               <thead>
                 <tr>
                   <th>Producto</th>
-                  <th>Cantidad</th>
-                  <th>Precio Unitario</th>
+                  <th>Cant.</th>
+                  <th>P. unit.</th>
                   <th>Subtotal</th>
-                  <th>Acción</th>
+                  <th />
                 </tr>
               </thead>
               <tbody>
-                {detalles.map(detalle => {
-                  const producto = productos.find(p => p.productoID === detalle.productoID);
-                  const subtotal = detalle.cantidad * detalle.precioUnitario;
+                {detalles.map((detalle) => {
+                  const producto = productos.find((p) => p.productoID === detalle.productoID);
+                  const lineSub = detalle.cantidad * detalle.precioUnitario;
                   return (
                     <tr key={detalle.productoID}>
                       <td>{producto?.nombre}</td>
                       <td>{detalle.cantidad}</td>
                       <td>${detalle.precioUnitario.toFixed(2)}</td>
-                      <td>${subtotal.toFixed(2)}</td>
-                      <td>
+                      <td>${lineSub.toFixed(2)}</td>
+                      <td className="table-actions">
                         <button
                           type="button"
-                          onClick={() => handleRemoverProducto(detalle.productoID)}
                           className="btn btn-danger btn-sm"
+                          onClick={() => handleRemoverProducto(detalle.productoID)}
                         >
-                          Quitar
+                          Cancelar
                         </button>
                       </td>
                     </tr>
@@ -325,41 +342,44 @@ export const VentasForm = () => {
             </table>
           </div>
 
-          <div className="totales">
-            <div className="total-row">
-              <span>Subtotal:</span>
+          <div className="ventas-totals">
+            <div className="ventas-totals__row">
+              <span>Subtotal</span>
               <span>${subtotal.toFixed(2)}</span>
             </div>
-            <div className="total-row">
-              <span>IVA (19%):</span>
+            <div className="ventas-totals__row">
+              <span>IVA (12%)</span>
               <span>${iva.toFixed(2)}</span>
             </div>
-            <div className="total-row total-final">
-              <span>Total:</span>
+            <div className="ventas-totals__row ventas-totals__row--total">
+              <span>Total</span>
               <span>${total.toFixed(2)}</span>
             </div>
           </div>
         </div>
-      )}
+      ) : null}
 
-      <div className="form-actions">
+      <div className="ventas-form__footer-actions">
         <button
+          type="button"
+          className="btn btn-success"
           onClick={handleSubmit}
           disabled={!clienteSeleccionado || detalles.length === 0 || loading}
-          className="btn btn-success"
         >
-          {loading ? 'Procesando...' : 'Crear Venta'}
+          {loading ? 'Procesando…' : 'Registrar venta'}
         </button>
         <button
           type="button"
+          className="btn btn-secondary"
           onClick={() => {
             setClienteSeleccionado('');
             setDetalles([]);
+            setProductoSeleccionado('');
+            setCantidadSeleccionada(1);
             setError(null);
           }}
-          className="btn btn-secondary"
         >
-          Limpiar Formulario
+          Limpiar formulario
         </button>
       </div>
     </div>
