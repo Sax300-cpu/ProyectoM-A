@@ -92,5 +92,24 @@ namespace ProductosService.Controllers
 
             return NoContent();
         }
+
+        // PUT: api/productos/5/reducir-stock
+        [HttpPut("{id}/reducir-stock")]
+        public async Task<IActionResult> ReducirStock(int id, [FromBody] ReducirStockDto reducirStockDto)
+        {
+            var producto = await _context.Productos.FindAsync(id);
+            if (producto == null)
+                return NotFound("Producto no encontrado.");
+
+            if (producto.Stock < reducirStockDto.Cantidad)
+                return BadRequest("Stock insuficiente.");
+
+            producto.Stock -= reducirStockDto.Cantidad;
+            producto.FechaActualizacion = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { producto.ProductoID, producto.Stock });
+        }
     }
 }
