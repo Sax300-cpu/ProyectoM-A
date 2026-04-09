@@ -16,13 +16,11 @@ namespace VentasService.Controllers
 
         private readonly VentasContext _context;
         private readonly IMapper _mapper;
-        private readonly HttpClient _httpClient;
 
-        public VentasController(VentasContext context, IMapper mapper, HttpClient httpClient)
+        public VentasController(VentasContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
-            _httpClient = httpClient;
         }
 
         // GET: api/ventas
@@ -126,77 +124,7 @@ namespace VentasService.Controllers
             _context.Ventas.Add(venta);
             await _context.SaveChangesAsync();
 
-            // Reducir stock en ProductosService
-            try
-            {
-                Console.WriteLine($"Iniciando reducción de stock para venta {venta.VentaID}");
-                foreach (var detalle in venta.Detalles)
-                {
-                    Console.WriteLine($"Reduciendo stock para producto {detalle.ProductoID}, cantidad {detalle.Cantidad}");
-                    var response = await _httpClient.PutAsJsonAsync(
-                        $"http://localhost:5001/api/productos/{detalle.ProductoID}/reducir-stock",
-                        new { Cantidad = detalle.Cantidad }
-                    );
-
-                    if (response.IsSuccessStatusCode)
-                    {
-                        Console.WriteLine($"Stock reducido exitosamente para producto {detalle.ProductoID}");
-                    }
-                    else
-                    {
-                        var errorContent = await response.Content.ReadAsStringAsync();
-                        Console.WriteLine($"Error reduciendo stock para producto {detalle.ProductoID}: {response.StatusCode} - {errorContent}");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error al comunicarse con ProductosService: {ex.Message}");
-            }
-
             return CreatedAtAction(nameof(GetVenta), new { id = venta.VentaID }, _mapper.Map<VentaDto>(venta));
-        }
-
-        // PUT: api/ventas/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutVenta(int id, VentaUpdateDto ventaUpdateDto)
-        {
-            if (id != ventaUpdateDto.VentaID)
-                return BadRequest("El ID de la venta no coincide.");
-
-            var venta = await _context.Ventas.FindAsync(id);
-            if (venta == null)
-                return NotFound();
-
-            _mapper.Map(ventaUpdateDto, venta);
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!_context.Ventas.Any(e => e.VentaID == id))
-                    return NotFound();
-
-                throw;
-            }
-
-            return NoContent();
-        }
-
-        // DELETE: api/ventas/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteVenta(int id)
-        {
-            var venta = await _context.Ventas.FindAsync(id);
-            if (venta == null)
-                return NotFound();
-
-            _context.Ventas.Remove(venta);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
         }
     }
 }

@@ -175,16 +175,9 @@ namespace ApiGateway.Services
                     if (producto.Stock < d.Cantidad)
                         throw new InvalidOperationException($"Stock insuficiente para producto {d.ProductoID}. Disponible: {producto.Stock}.");
 
-                    var nuevoStock = producto.Stock - d.Cantidad;
-                    await UpdateProductoAsync(d.ProductoID, new ProductoUpdateDto
-                    {
-                        ProductoID = producto.ProductoID,
-                        Nombre = producto.Nombre ?? string.Empty,
-                        Precio = producto.Precio,
-                        Stock = nuevoStock,
-                        Descripcion = producto.Descripcion ?? string.Empty,
-                        Activo = producto.Activo
-                    });
+                    // Descontar usando el endpoint seguro para evitar problemas de concurrencia
+                    var responseStock = await _httpClient.PutAsJsonAsync($"{_productosServiceUrl}/api/productos/{d.ProductoID}/reducir-stock", new { Cantidad = d.Cantidad });
+                    responseStock.EnsureSuccessStatusCode();
                 }
 
                 var response = await _httpClient.PostAsJsonAsync($"{_ventasServiceUrl}/api/ventas", request);
@@ -260,10 +253,18 @@ namespace ApiGateway.Services
 
         public async Task<List<ProductoVendidoDto>> GetProductosMasVendidosAsync(int top)
         {
-            var response = await _httpClient.GetAsync(
-                $"{_ventasServiceUrl}/api/ventas/estadisticas/productos-mas-vendidos?top={top}");
-            response.EnsureSuccessStatusCode();
-            return await response.Content.ReadFromJsonAsync<List<ProductoVendidoDto>>() ?? new List<ProductoVendidoDto>();
+            try
+            {
+                // Llamamos al endpoint que tienes en VentasController
+                var response = await _httpClient.GetAsync($"{_ventasServiceUrl}/api/ventas/estadisticas/productos-mas-vendidos?top={top}");
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadFromJsonAsync<List<ProductoVendidoDto>>() ?? new List<ProductoVendidoDto>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting productos mas vendidos: {ex.Message}");
+                return new List<ProductoVendidoDto>();
+            }
         }
     }
 }
