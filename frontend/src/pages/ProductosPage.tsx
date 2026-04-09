@@ -4,12 +4,17 @@ import type { Producto } from '../types';
 import { apiService } from '../services/apiService';
 import './Page.css';
 
-type FormState = Omit<Producto, 'productoID' | 'productoUUID'> & { productoID?: number; productoUUID?: string };
+type FormState = Omit<Producto, 'productoID' | 'productoUUID' | 'precio' | 'stock'> & { 
+  productoID?: number; 
+  productoUUID?: string; 
+  precio: number | ''; 
+  stock: number | ''; 
+};
 
 const emptyForm: FormState = {
   nombre: '',
-  precio: 0,
-  stock: 0,
+  precio: '',
+  stock: '',
   descripcion: '',
   activo: true,
 };
@@ -78,16 +83,16 @@ export function ProductosPage() {
         await apiService.updateProducto(form.productoID!, {
           productoID: form.productoID!,
           nombre: form.nombre,
-          precio: form.precio,
-          stock: form.stock,
+              precio: Number(form.precio) || 0,
+              stock: Number(form.stock) || 0,
           descripcion: form.descripcion,
           activo: form.activo,
         });
       } else {
         await apiService.createProducto({
           nombre: form.nombre,
-          precio: form.precio,
-          stock: form.stock,
+              precio: Number(form.precio) || 0,
+              stock: Number(form.stock) || 0,
           descripcion: form.descripcion,
           activo: form.activo,
         });
@@ -150,12 +155,12 @@ export function ProductosPage() {
               type="number"
               step="0.01"
               value={form.precio}
-              onChange={(e) => setForm({ ...form, precio: Number(e.target.value) || 0 })}
+              onChange={(e) => setForm({ ...form, precio: e.target.value === '' ? '' : Number(e.target.value) })}
             />
           </div>
           <div className="form-field">
             <label>Stock</label>
-            <input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: Number(e.target.value) || 0 })} />
+            <input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value === '' ? '' : Number(e.target.value) })} />
           </div>
           <div className="form-field form-field--wide">
             <label>Descripción</label>
@@ -239,4 +244,3 @@ export function ProductosPage() {
     </div>
   );
 }
-
