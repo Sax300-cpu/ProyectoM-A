@@ -16,11 +16,13 @@ namespace VentasService.Controllers
 
         private readonly VentasContext _context;
         private readonly IMapper _mapper;
+        private readonly HttpClient _httpClient;
 
-        public VentasController(VentasContext context, IMapper mapper)
+        public VentasController(VentasContext context, IMapper mapper, HttpClient httpClient)
         {
             _context = context;
             _mapper = mapper;
+            _httpClient = httpClient;
         }
 
         // GET: api/ventas
@@ -120,8 +122,37 @@ namespace VentasService.Controllers
 
             RecalcularTotalesDesdeDetalles(venta);
 
+            // Guardar la venta primero
             _context.Ventas.Add(venta);
             await _context.SaveChangesAsync();
+
+            // Reducir stock en ProductosService
+            try
+            {
+                Console.WriteLine($"Iniciando reducción de stock para venta {venta.VentaID}");
+                foreach (var detalle in venta.Detalles)
+                {
+                    Console.WriteLine($"Reduciendo stock para producto {detalle.ProductoID}, cantidad {detalle.Cantidad}");
+                    var response = await _httpClient.PutAsJsonAsync(
+                        $"http://localhost:5001/api/productos/{detalle.ProductoID}/reducir-stock",
+                        new { Cantidad = detalle.Cantidad }
+                    );
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine($"Stock reducido exitosamente para producto {detalle.ProductoID}");
+                    }
+                    else
+                    {
+                        var errorContent = await response.Content.ReadAsStringAsync();
+                        Console.WriteLine($"Error reduciendo stock para producto {detalle.ProductoID}: {response.StatusCode} - {errorContent}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al comunicarse con ProductosService: {ex.Message}");
+            }
 
             return CreatedAtAction(nameof(GetVenta), new { id = venta.VentaID }, _mapper.Map<VentaDto>(venta));
         }

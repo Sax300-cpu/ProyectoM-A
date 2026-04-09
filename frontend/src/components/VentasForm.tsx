@@ -143,6 +143,14 @@ export const VentasForm = () => {
       setProductoSeleccionado('');
       setCantidadSeleccionada(1);
 
+      // Recargar productos para mostrar stock actualizado
+      try {
+        const productosData = await apiService.getProductos();
+        setProductos(productosData);
+      } catch (err) {
+        console.error('Error recargando productos:', err);
+      }
+
       setTimeout(() => setSuccess(false), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error creating venta');
