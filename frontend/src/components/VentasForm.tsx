@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import type { Cliente, Producto, DetalleVentaRequest } from '../types';
@@ -20,7 +21,7 @@ export const VentasForm = () => {
   const [clienteSeleccionado, setClienteSeleccionado] = useState<number | ''>('');
   const [detalles, setDetalles] = useState<DetalleVentaRequest[]>([]);
   const [productoSeleccionado, setProductoSeleccionado] = useState<number | ''>('');
-  const [cantidadSeleccionada, setCantidadSeleccionada] = useState<number>(1);
+  const [cantidadSeleccionada, setCantidadSeleccionada] = useState<number | ''>(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -65,8 +66,8 @@ export const VentasForm = () => {
   }, []);
 
   const handleAgregarProducto = () => {
-    if (!productoSeleccionado || !cantidadSeleccionada) {
-      setError('Selecciona producto y cantidad');
+    if (!productoSeleccionado || !cantidadSeleccionada || cantidadSeleccionada <= 0) {
+      setError('Selecciona producto y una cantidad válida');
       return;
     }
 
@@ -92,14 +93,14 @@ export const VentasForm = () => {
         ...detalles,
         {
           productoID: productoSeleccionado as number,
-          cantidad: cantidadSeleccionada,
+              cantidad: cantidadSeleccionada as number,
           precioUnitario: producto.precio,
         },
       ]);
     }
 
     setProductoSeleccionado('');
-    setCantidadSeleccionada(1);
+    setCantidadSeleccionada(0);
     setError(null);
   };
 
@@ -141,7 +142,7 @@ export const VentasForm = () => {
       setClienteSeleccionado('');
       setDetalles([]);
       setProductoSeleccionado('');
-      setCantidadSeleccionada(1);
+      setCantidadSeleccionada(0);
 
       // Recargar productos para mostrar stock actualizado
       try {
@@ -165,6 +166,7 @@ export const VentasForm = () => {
   const puedeAgregarLinea =
     productoPreview &&
     productoPreview.stock > 0 &&
+    cantidadSeleccionada !== '' &&
     cantidadSeleccionada >= 1 &&
     cantidadSeleccionada <= productoPreview.stock;
 
@@ -255,9 +257,9 @@ export const VentasForm = () => {
               <input
                 id="cantidad"
                 type="number"
-                min={1}
+            min={0}
                 value={cantidadSeleccionada}
-                onChange={(e) => setCantidadSeleccionada(parseInt(e.target.value, 10) || 1)}
+            onChange={(e) => setCantidadSeleccionada(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
               />
             </div>
             <div className="ventas-product-picker__btn">
@@ -383,7 +385,7 @@ export const VentasForm = () => {
             setClienteSeleccionado('');
             setDetalles([]);
             setProductoSeleccionado('');
-            setCantidadSeleccionada(1);
+            setCantidadSeleccionada(0);
             setError(null);
           }}
         >
