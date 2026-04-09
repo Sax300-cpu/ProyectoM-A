@@ -44,9 +44,28 @@ namespace ProductosService.Controllers
         [HttpPost]
         public async Task<ActionResult<ProductoDto>> PostProducto(ProductoCreateDto productoCreateDto)
         {
+            // Validar duplicado por nombre (ignorando mayúsculas/minúsculas y espacios)
+            var nombreNormalizado = productoCreateDto.Nombre.Trim().ToLower();
+            if (await _context.Productos.AnyAsync(p => p.Nombre.Trim().ToLower() == nombreNormalizado))
+            {
+                return BadRequest(new { message = "Ya existe un producto con ese nombre." });
+            }
+
             var producto = _mapper.Map<Producto>(productoCreateDto);
             _context.Productos.Add(producto);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                // Detectar error de restricción única (índice único)
+                if (ex.InnerException != null && ex.InnerException.Message.Contains("IX_Productos_Nombre_Unico"))
+                {
+                    return BadRequest(new { message = "Ya existe un producto con ese nombre." });
+                }
+                throw;
+            }
 
             return CreatedAtAction(nameof(GetProducto), new { id = producto.ProductoID }, _mapper.Map<ProductoDto>(producto));
         }
@@ -91,6 +110,25 @@ namespace ProductosService.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // PUT: api/productos/5/reducir-stock
+        [HttpPut("{id}/reducir-stock")]
+        public async Task<IActionResult> ReducirStock(int id, [FromBody] ReducirStockDto reducirStockDto)
+        {
+            var producto = await _context.Productos.FindAsync(id);
+            if (producto == null)
+                return NotFound("Producto no encontrado.");
+
+            if (producto.Stock < reducirStockDto.Cantidad)
+                return BadRequest("Stock insuficiente.");
+
+            producto.Stock -= reducirStockDto.Cantidad;
+            producto.FechaActualizacion = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { producto.ProductoID, producto.Stock });
         }
     }
 }

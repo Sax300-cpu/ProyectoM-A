@@ -3622,19 +3622,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Usuario\\.nuget\\packages\\": {}
+    "C:\\Users\\wilso\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\ProyectoMA\\ProyectoM-A\\ClientesService\\ClientesService\\ClientesService.csproj",
+      "projectUniqueName": "C:\\Users\\wilso\\ProyectoM-A\\ClientesService\\ClientesService\\ClientesService.csproj",
       "projectName": "ClientesService",
-      "projectPath": "D:\\ProyectoMA\\ProyectoM-A\\ClientesService\\ClientesService\\ClientesService.csproj",
-      "packagesPath": "C:\\Users\\Usuario\\.nuget\\packages\\",
-      "outputPath": "D:\\ProyectoMA\\ProyectoM-A\\ClientesService\\ClientesService\\obj\\",
+      "projectPath": "C:\\Users\\wilso\\ProyectoM-A\\ClientesService\\ClientesService\\ClientesService.csproj",
+      "packagesPath": "C:\\Users\\wilso\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\wilso\\ProyectoM-A\\ClientesService\\ClientesService\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\Usuario\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\wilso\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
@@ -4129,7 +4129,7 @@
       "code": "NU1903",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "El paquete \"AutoMapper\" 12.0.1 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-rvv3-g6hj-g44x",
+      "message": "Package 'AutoMapper' 12.0.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-rvv3-g6hj-g44x",
       "libraryId": "AutoMapper",
       "targetGraphs": [
         "net10.0"

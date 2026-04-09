@@ -44,6 +44,17 @@ namespace ClientesService.Controllers
         [HttpPost]
         public async Task<ActionResult<ClienteDto>> PostCliente(ClienteCreateDto clienteCreateDto)
         {
+            // Validar duplicados
+            if (await _context.Clientes.AnyAsync(c => c.Cedula == clienteCreateDto.Cedula))
+                return BadRequest(new { message = "Esta cédula ya está registrada por favor intente de nuevo" });
+
+            if (!string.IsNullOrWhiteSpace(clienteCreateDto.Telefono) &&
+                await _context.Clientes.AnyAsync(c => c.Telefono == clienteCreateDto.Telefono && c.Telefono != ""))
+                return BadRequest(new { message = "Este teléfono ya está registrado por favor intente de nuevo" });
+
+            if (await _context.Clientes.AnyAsync(c => c.Email == clienteCreateDto.Email))
+                return BadRequest(new { message = "Este correo ya está registrado por favor intente de nuevo" });
+
             var cliente = _mapper.Map<Cliente>(clienteCreateDto);
             _context.Clientes.Add(cliente);
             await _context.SaveChangesAsync();
