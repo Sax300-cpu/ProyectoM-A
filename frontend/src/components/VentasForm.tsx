@@ -11,7 +11,7 @@ function formatFechaProducto(iso?: string | null): string {
   if (!iso) return '—';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleString('es', { dateStyle: 'medium', timeStyle: 'short' });
+  return d.toLocaleDateString('es', { dateStyle: 'medium' });
 }
 
 export const VentasForm = () => {

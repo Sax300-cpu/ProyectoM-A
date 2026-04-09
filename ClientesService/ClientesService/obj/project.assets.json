@@ -3622,19 +3622,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\wilso\\.nuget\\packages\\": {}
+    "C:\\Users\\Usuario\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\wilso\\ProyectoM-A\\ClientesService\\ClientesService\\ClientesService.csproj",
+      "projectUniqueName": "D:\\ProyectoMA\\ProyectoM-A\\ClientesService\\ClientesService\\ClientesService.csproj",
       "projectName": "ClientesService",
-      "projectPath": "C:\\Users\\wilso\\ProyectoM-A\\ClientesService\\ClientesService\\ClientesService.csproj",
-      "packagesPath": "C:\\Users\\wilso\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\wilso\\ProyectoM-A\\ClientesService\\ClientesService\\obj\\",
+      "projectPath": "D:\\ProyectoMA\\ProyectoM-A\\ClientesService\\ClientesService\\ClientesService.csproj",
+      "packagesPath": "C:\\Users\\Usuario\\.nuget\\packages\\",
+      "outputPath": "D:\\ProyectoMA\\ProyectoM-A\\ClientesService\\ClientesService\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\wilso\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\Usuario\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"

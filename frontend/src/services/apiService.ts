@@ -26,7 +26,15 @@ export const apiService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(cliente),
     });
-    if (!response.ok) throw new Error('Failed to create cliente');
+    if (!response.ok) {
+      let errorMsg = 'No se pudo crear el Cliente, verifique los datos cédula, correo o teléfono.';
+      try {
+        const data = await response.json();
+        if (data && typeof data.message === 'string') errorMsg = data.message;
+        else if (data && data.errors && Array.isArray(data.errors) && data.errors.length > 0) errorMsg = data.errors[0];
+      } catch {}
+      throw new Error(errorMsg);
+    }
     return response.json();
   },
 
@@ -57,7 +65,15 @@ export const apiService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(producto),
     });
-    if (!response.ok) throw new Error('Failed to create producto');
+    if (!response.ok) {
+      let errorMsg = 'No se pudo crear el producto, verifique el nombre.';
+      try {
+        const data = await response.json();
+        if (data && typeof data.message === 'string') errorMsg = data.message;
+        else if (data && data.errors && Array.isArray(data.errors) && data.errors.length > 0) errorMsg = data.errors[0];
+      } catch {}
+      throw new Error(errorMsg);
+    }
     return response.json();
   },
 

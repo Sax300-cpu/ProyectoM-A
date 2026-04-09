@@ -124,9 +124,6 @@ export function HistorialVentasPage() {
 
       <div className="card">
         <div className="card__title">Productos más vendidos (unidades)</div>
-        <p className="historial-page__hint">
-          Se calcula sumando <code>cantidad</code> en <code>DetalleVenta</code>. No requiere tablas nuevas.
-        </p>
         {ranking.length === 0 ? (
           <p className="historial-page__empty">Aún no hay líneas de venta registradas.</p>
         ) : (

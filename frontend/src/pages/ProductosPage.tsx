@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { ConfirmModal } from '../components/ConfirmModal';
 import type { Producto } from '../types';
 import { apiService } from '../services/apiService';
 import './Page.css';
@@ -14,6 +15,8 @@ const emptyForm: FormState = {
 };
 
 export function ProductosPage() {
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [productoAEliminar, setProductoAEliminar] = useState<number | null>(null);
   const [productos, setProductos] = useState<Producto[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -98,20 +101,25 @@ export function ProductosPage() {
     }
   }
 
-  async function handleDelete(id: number) {
-    const ok = window.confirm('¿Eliminar este producto?');
-    if (!ok) return;
+  function pedirConfirmacionEliminar(id: number) {
+    setProductoAEliminar(id);
+    setConfirmOpen(true);
+  }
 
+  async function handleDeleteConfirmado() {
+    if (productoAEliminar == null) return;
     setSaving(true);
     setError(null);
     try {
-      await apiService.deleteProducto(id);
+      await apiService.deleteProducto(productoAEliminar);
       await reload();
-      if (form.productoID === id) resetForm();
+      if (form.productoID === productoAEliminar) resetForm();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error eliminando producto');
     } finally {
       setSaving(false);
+      setConfirmOpen(false);
+      setProductoAEliminar(null);
     }
   }
 
@@ -188,6 +196,7 @@ export function ProductosPage() {
                 <tr>
                   <th>ID</th>
                   <th>Nombre</th>
+                  <th>Descripción</th>
                   <th>Precio</th>
                   <th>Stock</th>
                   <th>Activo</th>
@@ -199,6 +208,7 @@ export function ProductosPage() {
                   <tr key={p.productoID}>
                     <td>{p.productoID}</td>
                     <td>{p.nombre}</td>
+                    <td>{p.descripcion}</td>
                     <td>${p.precio.toFixed(2)}</td>
                     <td>{p.stock}</td>
                     <td>{p.activo ? 'Sí' : 'No'}</td>
@@ -206,7 +216,7 @@ export function ProductosPage() {
                       <button className="btn btn-primary btn-sm" type="button" onClick={() => startEdit(p)} disabled={saving}>
                         Editar
                       </button>
-                      <button className="btn btn-danger btn-sm" type="button" onClick={() => handleDelete(p.productoID)} disabled={saving}>
+                      <button className="btn btn-danger btn-sm" type="button" onClick={() => pedirConfirmacionEliminar(p.productoID)} disabled={saving}>
                         Eliminar
                       </button>
                     </td>
@@ -217,6 +227,15 @@ export function ProductosPage() {
           </div>
         )}
       </div>
+      <ConfirmModal
+        open={confirmOpen}
+        title="Eliminar producto"
+        message="¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        onConfirm={handleDeleteConfirmado}
+        onCancel={() => { setConfirmOpen(false); setProductoAEliminar(null); }}
+      />
     </div>
   );
 }

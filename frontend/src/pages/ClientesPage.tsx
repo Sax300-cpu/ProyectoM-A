@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { ConfirmModal } from '../components/ConfirmModal';
 import type { Cliente } from '../types';
 import { apiService } from '../services/apiService';
 import './Page.css';
@@ -15,6 +16,8 @@ const emptyForm: FormState = {
 };
 
 export function ClientesPage() {
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [clienteAEliminar, setClienteAEliminar] = useState<number | null>(null);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -61,8 +64,13 @@ export function ClientesPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setSaving(true);
     setError(null);
+    // Validación de campos obligatorios
+    if (!form.cedula.trim() || !form.nombre.trim() || !form.apellido.trim() || !form.email.trim()) {
+      setError('Por favor, complete todos los campos obligatorios: cédula, nombre, apellido y correo.');
+      return;
+    }
+    setSaving(true);
     try {
       if (isEditing) {
         await apiService.updateCliente(form.clienteID!, {
@@ -93,20 +101,25 @@ export function ClientesPage() {
     }
   }
 
-  async function handleDelete(id: number) {
-    const ok = window.confirm('¿Eliminar este cliente?');
-    if (!ok) return;
+  function pedirConfirmacionEliminar(id: number) {
+    setClienteAEliminar(id);
+    setConfirmOpen(true);
+  }
 
+  async function handleDeleteConfirmado() {
+    if (clienteAEliminar == null) return;
     setSaving(true);
     setError(null);
     try {
-      await apiService.deleteCliente(id);
+      await apiService.deleteCliente(clienteAEliminar);
       await reload();
-      if (form.clienteID === id) resetForm();
+      if (form.clienteID === clienteAEliminar) resetForm();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Error eliminando cliente');
     } finally {
       setSaving(false);
+      setConfirmOpen(false);
+      setClienteAEliminar(null);
     }
   }
 
@@ -204,7 +217,7 @@ export function ClientesPage() {
                       <button className="btn btn-primary btn-sm" type="button" onClick={() => startEdit(c)} disabled={saving}>
                         Editar
                       </button>
-                      <button className="btn btn-danger btn-sm" type="button" onClick={() => handleDelete(c.clienteID)} disabled={saving}>
+                      <button className="btn btn-danger btn-sm" type="button" onClick={() => pedirConfirmacionEliminar(c.clienteID)} disabled={saving}>
                         Eliminar
                       </button>
                     </td>
@@ -215,6 +228,15 @@ export function ClientesPage() {
           </div>
         )}
       </div>
+      <ConfirmModal
+        open={confirmOpen}
+        title="Eliminar cliente"
+        message="¿Estás seguro de que deseas eliminar este cliente? Esta acción no se puede deshacer."
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        onConfirm={handleDeleteConfirmado}
+        onCancel={() => { setConfirmOpen(false); setClienteAEliminar(null); }}
+      />
     </div>
   );
 }

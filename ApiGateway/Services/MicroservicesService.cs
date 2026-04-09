@@ -77,7 +77,19 @@ namespace ApiGateway.Services
         public async Task<ClienteDto> CreateClienteAsync(ClienteCreateDto request)
         {
             var response = await _httpClient.PostAsJsonAsync($"{_clientesServiceUrl}/api/clientes", request);
-            response.EnsureSuccessStatusCode();
+            if (!response.IsSuccessStatusCode)
+            {
+                // Intentar extraer mensaje de error del backend
+                string errorMsg = "Error creando cliente.";
+                try
+                {
+                    var errorObj = await response.Content.ReadFromJsonAsync<Dictionary<string, object>>();
+                    if (errorObj != null && errorObj.TryGetValue("message", out var msgObj) && msgObj != null)
+                        errorMsg = msgObj.ToString() ?? errorMsg;
+                }
+                catch { /* ignorar parseo fallido */ }
+                throw new InvalidOperationException(errorMsg);
+            }
             return (await response.Content.ReadFromJsonAsync<ClienteDto>()) ?? new ClienteDto();
         }
 
